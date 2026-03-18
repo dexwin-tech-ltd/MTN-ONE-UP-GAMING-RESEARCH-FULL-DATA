@@ -1,34 +1,37 @@
-import { getDatabase } from './runtime';
-import type { MagicLinkRecord } from './types';
+import { getDatabase } from "./runtime"
+import type { MagicLinkRecord } from "./types"
 
 interface CreateMagicLinkInput {
-  selector: string;
-  verifierHash: string;
-  email: string;
-  expiresAt: number;
-  createdAt: number;
-  requestIp: string | null;
-  userAgent: string | null;
+  selector: string
+  verifierHash: string
+  email: string
+  expiresAt: number
+  createdAt: number
+  requestIp: string | null
+  userAgent: string | null
 }
 
 interface ConsumeMagicLinkResult {
-  status: 'consumed' | 'already-used' | 'expired' | 'not-found';
-  email?: string;
+  status: "consumed" | "already-used" | "expired" | "not-found"
+  email?: string
 }
 
-const inMemoryMagicLinks = new Map<string, MagicLinkRecord>();
+const inMemoryMagicLinks = new Map<string, MagicLinkRecord>()
 
 function getInMemoryKey(selector: string, verifierHash: string): string {
-  return `${selector}:${verifierHash}`;
+  return `${selector}:${verifierHash}`
 }
 
-export async function createMagicLink(locals: App.Locals, input: CreateMagicLinkInput): Promise<void> {
-  let db: ReturnType<typeof getDatabase> | null = null;
+export async function createMagicLink(
+  locals: App.Locals,
+  input: CreateMagicLinkInput,
+): Promise<void> {
+  let db: ReturnType<typeof getDatabase> | null = null
 
   try {
-    db = getDatabase(locals);
+    db = getDatabase(locals)
   } catch {
-    db = null;
+    db = null
   }
 
   if (!db) {
@@ -41,9 +44,9 @@ export async function createMagicLink(locals: App.Locals, input: CreateMagicLink
       created_at: input.createdAt,
       request_ip: input.requestIp,
       user_agent: input.userAgent,
-    });
+    })
 
-    return;
+    return
   }
 
   await db
@@ -57,7 +60,7 @@ export async function createMagicLink(locals: App.Locals, input: CreateMagicLink
         created_at,
         request_ip,
         user_agent
-      ) VALUES (?, ?, ?, ?, NULL, ?, ?, ?)`
+      ) VALUES (?, ?, ?, ?, NULL, ?, ?, ?)`,
     )
     .bind(
       input.selector,
@@ -68,7 +71,7 @@ export async function createMagicLink(locals: App.Locals, input: CreateMagicLink
       input.requestIp,
       input.userAgent,
     )
-    .run();
+    .run()
 }
 
 export async function consumeMagicLink(
@@ -77,31 +80,33 @@ export async function consumeMagicLink(
   verifierHash: string,
   now: number,
 ): Promise<ConsumeMagicLinkResult> {
-  let db: ReturnType<typeof getDatabase> | null = null;
+  let db: ReturnType<typeof getDatabase> | null = null
 
   try {
-    db = getDatabase(locals);
+    db = getDatabase(locals)
   } catch {
-    db = null;
+    db = null
   }
 
   if (!db) {
-    const inMemory = inMemoryMagicLinks.get(getInMemoryKey(selector, verifierHash));
+    const inMemory = inMemoryMagicLinks.get(
+      getInMemoryKey(selector, verifierHash),
+    )
 
     if (!inMemory) {
-      return { status: 'not-found' };
+      return { status: "not-found" }
     }
 
     if (inMemory.consumed_at) {
-      return { status: 'already-used' };
+      return { status: "already-used" }
     }
 
     if (inMemory.expires_at < now) {
-      return { status: 'expired' };
+      return { status: "expired" }
     }
 
-    inMemory.consumed_at = now;
-    return { status: 'consumed', email: inMemory.email };
+    inMemory.consumed_at = now
+    return { status: "consumed", email: inMemory.email }
   }
 
   const consumed = await db
@@ -112,35 +117,36 @@ export async function consumeMagicLink(
          AND verifier_hash = ?
          AND consumed_at IS NULL
          AND expires_at >= ?
-       RETURNING email`
+       RETURNING email`,
     )
     .bind(now, selector, verifierHash, now)
-    .first<{ email: string }>();
+    .first<{ email: string }>()
 
   if (consumed?.email) {
-    return { status: 'consumed', email: consumed.email };
+    return { status: "consumed", email: consumed.email }
   }
 
   const existing = await db
     .prepare(
       `SELECT email, expires_at, consumed_at
        FROM magic_link_tokens
-       WHERE selector = ? AND verifier_hash = ?`
+       WHERE selector = ? AND verifier_hash = ?`,
     )
     .bind(selector, verifierHash)
-    .first<Pick<MagicLinkRecord, 'email' | 'expires_at' | 'consumed_at'>>();
+    .first<Pick<MagicLinkRecord, "email" | "expires_at" | "consumed_at">>()
 
   if (!existing) {
-    return { status: 'not-found' };
+    return { status: "not-found" }
   }
 
   if (existing.consumed_at) {
-    return { status: 'already-used' };
+    return { status: "already-used" }
   }
 
   if (existing.expires_at < now) {
-    return { status: 'expired' };
+    return { status: "expired" }
   }
 
-  return { status: 'not-found' };
+  return { status: "not-found" }
 }
+

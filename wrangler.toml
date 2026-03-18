@@ -1,0 +1,17 @@
+name = "mtn-one-up-gaming-research-full-data"
+pages_build_output_dir = "./dist"
+compatibility_date = "2026-03-18"
+compatibility_flags = ["nodejs_compat"]
+
+[vars]
+PUBLIC_BASE_URL = "https://mtn-one-up-gaming-report.pages.dev"
+EMAIL_FROM = "MTN Gaming Report Access <noreply@dexwin.net>"
+
+# MAGIC_LINK_SECRET, SESSION_SECRET, RESEND_API_KEY are set as Pages secrets:
+# npx wrangler pages secret put MAGIC_LINK_SECRET --project-name mtn-one-up-gaming-report
+
+# Bind your D1 database before local preview or deployment.
+[[d1_databases]]
+binding = "DB"
+database_name = "mtn-one-up-auth"
+database_id = "2a1bbfbc-899b-4325-857c-35a17f59416b"

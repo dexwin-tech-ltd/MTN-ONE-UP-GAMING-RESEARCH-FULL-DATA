@@ -1,0 +1,13 @@
+---
+import { loadLegacyDashboardSource } from '../lib/dashboard/legacy';
+
+const { headContent, bodyContent } = await loadLegacyDashboardSource();
+---
+<html lang="en" data-theme="light">
+  <head>
+    <Fragment set:html={headContent} />
+  </head>
+  <body>
+    <Fragment set:html={bodyContent} />
+  </body>
+</html>

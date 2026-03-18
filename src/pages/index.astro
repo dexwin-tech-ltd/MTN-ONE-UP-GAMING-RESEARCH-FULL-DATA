@@ -1,0 +1,15 @@
+---
+import { getAuthenticatedEmail } from '../lib/auth/session';
+
+const token = Astro.url.searchParams.get('token');
+
+if (await getAuthenticatedEmail(Astro.locals, Astro.cookies, Math.floor(Date.now() / 1000))) {
+  return Astro.redirect('/dashboard');
+}
+
+if (token) {
+  return Astro.redirect(`/verify?token=${encodeURIComponent(token)}`);
+}
+
+return Astro.redirect('/auth');
+---

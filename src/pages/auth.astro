@@ -1,0 +1,228 @@
+---
+import { getAuthenticatedEmail } from '../lib/auth/session';
+
+const allowedDomains = ['@mtn.com', '@dexwin.net'];
+const status = Astro.url.searchParams.get('status');
+const showCheckEmailCard = status === 'check-email' || status === 'sent';
+const showDomainError = status === 'domain-error';
+
+if (await getAuthenticatedEmail(Astro.locals, Astro.cookies, Math.floor(Date.now() / 1000))) {
+  return Astro.redirect('/dashboard');
+}
+
+const statusMessage =
+  showCheckEmailCard
+    ? 'If the email is eligible, a magic link has been requested. Check your inbox or server logs if email delivery is not configured yet.'
+    : status === 'rate-limited'
+      ? 'Too many requests were made recently. Wait a moment and try again.'
+      : status === 'error'
+        ? 'The sign-in request could not be completed. Check your configuration and try again.'
+        : showDomainError
+          ? 'Only @mtn.com and @dexwin.net email addresses are allowed.'
+    : null;
+---
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Sign In | MTN OneUp Gaming Research</title>
+    <style>
+      :root {
+        --primary: #083c4c;
+        --accent: #02aa69;
+        --mtn-yellow: #ffcb05;
+        --bg: #f4f7f6;
+        --card: #ffffff;
+        --text: #0a0a0a;
+        --muted: #4a5568;
+        --border: #e2e8f0;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        background:
+          radial-gradient(circle at 12% 10%, rgba(255, 203, 5, 0.22), transparent 30%),
+          radial-gradient(circle at 88% 8%, rgba(2, 170, 105, 0.17), transparent 34%),
+          linear-gradient(180deg, #eaf4f1 0%, var(--bg) 100%);
+        color: var(--text);
+        display: grid;
+        place-items: center;
+        padding: 24px;
+      }
+
+      .card {
+        width: min(100%, 420px);
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        box-shadow: 0 20px 60px rgba(8, 60, 76, 0.12);
+        padding: 28px;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .brand-strip {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 8px;
+        background: linear-gradient(90deg, var(--mtn-yellow), var(--accent));
+      }
+
+      .brand-kicker {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin: 8px 0 14px;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.4px;
+        color: var(--primary);
+        text-transform: uppercase;
+      }
+
+      .brand-kicker-badge {
+        background: var(--mtn-yellow);
+        color: var(--primary);
+        border-radius: 6px;
+        padding: 2px 8px;
+      }
+
+      h1 {
+        margin: 0 0 8px;
+        font-size: 28px;
+      }
+
+      p {
+        margin: 0 0 18px;
+        color: var(--muted);
+        line-height: 1.5;
+      }
+
+      form {
+        display: grid;
+        gap: 12px;
+      }
+
+      label {
+        font-size: 14px;
+        font-weight: 600;
+      }
+
+      input {
+        width: 100%;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 14px 16px;
+        font: inherit;
+        transition: box-shadow 0.2s ease, border-color 0.2s ease;
+      }
+
+      input:focus {
+        outline: none;
+        border-color: var(--accent);
+        box-shadow: 0 0 0 4px rgba(2, 170, 105, 0.14);
+      }
+
+      button {
+        border: 0;
+        border-radius: 12px;
+        padding: 14px 16px;
+        background: linear-gradient(90deg, var(--primary), #0b546c);
+        color: #fff;
+        font: inherit;
+        font-weight: 700;
+        cursor: pointer;
+        transition: transform 0.15s ease, box-shadow 0.2s ease;
+      }
+
+      button:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 10px 24px rgba(8, 60, 76, 0.22);
+      }
+
+      .hint {
+        margin-top: 16px;
+        font-size: 13px;
+      }
+
+      ul {
+        margin: 8px 0 0;
+        padding-left: 18px;
+        color: var(--muted);
+      }
+
+      .error-text {
+        color: #9f1239;
+        margin-top: 8px;
+        font-size: 13px;
+        background: rgba(159, 18, 57, 0.08);
+        border: 1px solid rgba(159, 18, 57, 0.25);
+        border-radius: 10px;
+        padding: 10px 12px;
+      }
+
+      .check-email-card {
+        border: 1px solid rgba(2, 170, 105, 0.3);
+        background: linear-gradient(180deg, rgba(2, 170, 105, 0.12), rgba(2, 170, 105, 0.05));
+        border-radius: 14px;
+        padding: 16px;
+      }
+
+      .check-email-card h2 {
+        margin: 0 0 8px;
+        font-size: 20px;
+      }
+
+      .secondary-action {
+        margin-top: 12px;
+      }
+
+      .secondary-action a {
+        color: var(--primary);
+        font-weight: 600;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="card">
+      <div class="brand-strip"></div>
+      <div class="brand-kicker">
+        <span class="brand-kicker-badge">MTN</span>
+        OneUp Access
+      </div>
+      <h1>Sign in</h1>
+      <p>Enter your company email to receive a magic link. New approved users will be onboarded through the same flow.</p>
+      {showCheckEmailCard ? (
+        <section class="check-email-card">
+          <h2>Check your email</h2>
+          <p>{statusMessage}</p>
+          <p class="secondary-action"><a href="/auth">Use a different email</a></p>
+        </section>
+      ) : (
+        <form method="post" action="/api/auth/request-link">
+          <div>
+            <label for="email">Work email</label>
+            <input id="email" name="email" type="email" placeholder="name@mtn.com" autocomplete="email" required />
+            {showDomainError ? <p class="error-text">{statusMessage}</p> : null}
+          </div>
+          <button type="submit">Send magic link</button>
+        </form>
+      )}
+      {!showCheckEmailCard && !showDomainError && statusMessage ? <p>{statusMessage}</p> : null}
+      <div class="hint">
+        Allowed domains:
+        <ul>
+          {allowedDomains.map((domain) => <li>{domain}</li>)}
+        </ul>
+      </div>
+    </main>
+  </body>
+</html>

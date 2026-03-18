@@ -1,0 +1,7 @@
+node_modules
+.astro
+dist
+astro.config.*.tmp
+.env
+.env.*
+.wrangler

@@ -1,0 +1,177 @@
+---
+const token = Astro.url.searchParams.get('token');
+const hasToken = Boolean(token);
+const status = Astro.url.searchParams.get('status');
+
+const statusMessage =
+  status === 'missing-token'
+    ? 'This verification attempt did not include a token.'
+      : status === 'used'
+        ? 'This magic link has already been used.'
+        : status === 'expired'
+          ? 'This magic link has expired. Request a new one.'
+          : status === 'invalid'
+            ? 'This magic link is invalid.'
+            : status === 'error'
+              ? 'Verification could not be completed due to a server configuration problem.'
+      : null;
+---
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Verify Link | MTN OneUp Gaming Research</title>
+    <style>
+      :root {
+        --primary: #083c4c;
+        --accent: #02aa69;
+        --mtn-yellow: #ffcb05;
+        --bg: #f4f7f6;
+        --card: #ffffff;
+        --text: #0a0a0a;
+        --muted: #4a5568;
+        --border: #e2e8f0;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        background:
+          radial-gradient(circle at 12% 10%, rgba(255, 203, 5, 0.22), transparent 30%),
+          radial-gradient(circle at 88% 8%, rgba(2, 170, 105, 0.17), transparent 34%),
+          linear-gradient(180deg, #eaf4f1 0%, var(--bg) 100%);
+        color: var(--text);
+        display: grid;
+        place-items: center;
+        padding: 24px;
+      }
+
+      .card {
+        width: min(100%, 460px);
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        padding: 28px;
+        box-shadow: 0 20px 60px rgba(8, 60, 76, 0.12);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .brand-strip {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 8px;
+        background: linear-gradient(90deg, var(--mtn-yellow), var(--accent));
+      }
+
+      .brand-kicker {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin: 8px 0 14px;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.4px;
+        color: var(--primary);
+        text-transform: uppercase;
+      }
+
+      .brand-kicker-badge {
+        background: var(--mtn-yellow);
+        color: var(--primary);
+        border-radius: 6px;
+        padding: 2px 8px;
+      }
+
+      h1 {
+        margin: 0 0 8px;
+        font-size: 28px;
+      }
+
+      p {
+        margin: 0 0 12px;
+        line-height: 1.5;
+        color: var(--muted);
+      }
+
+      button,
+      a {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        margin-top: 16px;
+        border-radius: 12px;
+        padding: 14px 16px;
+        font: inherit;
+        text-decoration: none;
+      }
+
+      button {
+        border: 0;
+        background: linear-gradient(90deg, var(--primary), #0b546c);
+        color: #fff;
+        font-weight: 700;
+        cursor: pointer;
+        transition: transform 0.15s ease, box-shadow 0.2s ease;
+      }
+
+      button:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 10px 24px rgba(8, 60, 76, 0.22);
+      }
+
+      a {
+        color: var(--primary);
+        font-weight: 600;
+      }
+
+      .status-note {
+        margin: 0 0 14px;
+        border-radius: 10px;
+        border: 1px solid rgba(8, 60, 76, 0.2);
+        background: rgba(8, 60, 76, 0.06);
+        color: var(--primary);
+        padding: 10px 12px;
+        font-size: 13px;
+      }
+
+      .status-note.error {
+        border-color: rgba(159, 18, 57, 0.25);
+        background: rgba(159, 18, 57, 0.08);
+        color: #9f1239;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="card">
+      <div class="brand-strip"></div>
+      <div class="brand-kicker">
+        <span class="brand-kicker-badge">MTN</span>
+        OneUp Access
+      </div>
+      <h1>Verify your sign-in link</h1>
+      {statusMessage ? <p class={`status-note ${status ? 'error' : ''}`}>{statusMessage}</p> : null}
+      {hasToken ? (
+        <>
+          <p>The token is present. Continue to complete explicit verification, consume the link once, and create your session.</p>
+          <form method="post" action="/api/auth/verify">
+            <input type="hidden" name="token" value={token ?? ''} />
+            <button type="submit">Continue</button>
+          </form>
+        </>
+      ) : (
+        <>
+          <p>This link is missing a token. Request a new magic link to continue.</p>
+          <a href="/auth">Back to sign in</a>
+        </>
+      )}
+    </main>
+  </body>
+</html>

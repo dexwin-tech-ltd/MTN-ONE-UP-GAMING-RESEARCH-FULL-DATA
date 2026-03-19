@@ -1,4 +1,4 @@
-name = "mtn-one-up-gaming-research-full-data"
+name = "mtn-one-up-gaming-report"
 pages_build_output_dir = "./dist"
 compatibility_date = "2026-03-18"
 compatibility_flags = ["nodejs_compat"]

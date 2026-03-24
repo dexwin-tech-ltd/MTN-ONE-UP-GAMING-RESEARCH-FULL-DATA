@@ -4,7 +4,7 @@ compatibility_date = "2026-03-18"
 compatibility_flags = ["nodejs_compat"]
 
 [vars]
-PUBLIC_BASE_URL = "https://mtn-one-up-gaming-report.pages.dev"
+PUBLIC_BASE_URL = "https://mtnoneup.dexwin.net"
 EMAIL_FROM = "MTN Gaming Report Access <noreply@dexwin.net>"
 
 # MAGIC_LINK_SECRET, SESSION_SECRET, RESEND_API_KEY are set as Pages secrets:
